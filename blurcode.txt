@@ -1,0 +1,327 @@
+BOX BLUR IN PYTHON
+
+CODE:
+import numpy as np
+
+from matplotlib.image import imread
+
+import matplotlib.pyplot as plt 
+
+originalimg=imread("cat1.jpg") #this is image you can also give path of image if its not in the same folder in which your software is
+
+print(originalimg.shape) #prints orgininal image dimensions
+
+r,g,b=originalimg[:,:,0],originalimg[:,:,1],originalimg[:,:,2]  #converting image into grayscale
+
+gamma=1.04
+
+rconst,gconst,bconst=0.2126,0.7152,0.0722
+
+grayscale=rconst*r**gamma+gconst*g**gamma+bconst*b**gamma
+
+def boxblur(arr,n): #function to apply box blur filter
+
+    tot_sum=0
+
+    C=np.array([[0 for x in range(n)] for y in range(n)])
+
+    if(n==3):
+
+        A=np.array([[1,1,1],
+
+                   [1,1,1],
+
+                   [1,1,1]])
+
+    else:
+
+        A=np.array([[1,1,1,1,1],
+
+                   [1,1,1,1,1],
+
+                   [1,1,1,1,1],
+
+                   [1,1,1,1,1],
+
+                   [1,1,1,1,1]])
+
+    for a in range(n):
+
+        for b in range(n):
+
+            C[a][b]+=A[a][b]*arr[a][b]
+
+            tot_sum+=C[a][b]
+
+    if(n==3):
+
+        return tot_sum//9
+
+    else:
+
+        return tot_sum//25
+
+def kernel(image,n): # function to select 3by3 or 5by5 window from an orginial image in which filter will be applied
+
+    n_rows = len(image) #no of rows of original image
+
+    n_col = len(image[0]) #no of columns of original image
+
+    square=[[0 for i in range(n)] for j in range(n)] #matrix which will carry 3by3 or 5by5 window of image to be blurred
+
+    row_square=[0 for i1 in range(n)] #this will contain 1 row 
+
+    if(n==3):
+
+        temp_image=[[0 for i2 in range(n_col+2)] for j2 in range(n_rows+2)] #tempoaray image which will contain values of original image but with expanded columns and rows containing zeros
+
+    elif(n==5):
+
+        temp_image=[[0 for i2 in range(n_col+4)] for j2 in range(n_rows+4)]
+
+    else:
+
+        print("Wrong number,try again")
+
+    blur_image=[[0 for i3 in range(n_col)] for j3 in range(n_rows)]
+
+    y=n_rows-1
+
+    z=n_col-1
+
+    for a in range(n_col): # expanding rows ,assining zeros '0' to first and last rows for 3by3 filter
+
+        temp_image[0][a]=0 
+
+        temp_image[y][a]=0
+
+        if(n==5):          #also assinging zerso to second and second last rows of for 5by5 filter
+
+            temp_image[1][a]=0
+
+            temp_image[y-1][a]=0
+
+    for b in range(n_rows):# expanding rows ,assining zeros to first and last columns for 3by3 filter
+
+        temp_image[b][0]=0
+
+        temp_image[b][z]=0
+
+        if(n==5):         #also assinging zeros to second and second last columns of for 5by5 filter
+
+            temp_image[b][1]=0
+
+            temp_image[b][z-1]=0
+
+    for e in range(n_rows): #these two loops are to copy the value of original image into temporary image
+
+        for f in range(n_col):
+
+            if(n==3):
+
+                temp_image[e+1][f+1]=image[e][f]
+
+            else:
+
+                temp_image[e+2][f+2]=image[e][f]
+
+    for r in range(0,n_rows): #r is pointing rows(row pointer)
+
+        for c in range(0,n_col):#c is pointing columns(column pointer)
+
+            b=0
+
+            for i in range(r, r + n): # these are loops to select the window from temporaryimage either 3by 3 or 5by5
+
+                a=0
+
+                for j in range(c, c + n):
+
+                    row_square[a]=temp_image[i][j] # one row will be filled
+
+                    a=a+1
+
+                for k in range(0,n):
+
+                    square[b][k]=row_square[k] # that row will be copied in square 
+
+                b=b+1
+
+                row_square=[0 for i1 in range(n)] #emptying the row to be filled again
+
+            blur_image[r][c]=boxblur(square,n) #now this square will go and process in boxblur method and its result will be the resulting pixel of blurred umage
+
+            square=[[0 for i in range(n)] for j in range(n)] #emptying square to be filled again
+
+    return blur_image #returning blurred image
+
+filter=input("dou you want 3by3 filter to blur or 5by5 kindly enter: ")
+
+n=int(filter)
+
+image =grayscale
+
+blurredimg=kernel(image,n)
+
+x=np.array(blurredimg) #converting in array to see dimensions of blurred image
+
+print(x.shape)
+
+plt.imshow(blurredimg, cmap="gray") 
+
+plt.show()
+
+
+GUASSIAN BLUR IN PYTHON
+
+CODE:
+
+import numpy as np
+
+from matplotlib.image import imread
+
+import matplotlib.pyplot as plt 
+
+originalimg=imread("cat1.jpg") #this is image you can also give path of image if its not in the same folder in which your software is
+
+print(originalimg.shape) #prints orgininal image dimensions
+
+r,g,b=originalimg[:,:,0],originalimg[:,:,1],originalimg[:,:,2]  #converting image into grayscale
+
+gamma=1.04
+
+rconst,gconst,bconst=0.2126,0.7152,0.0722
+
+grayscale=rconst*r**gamma+gconst*g**gamma+bconst*b**gamma
+
+def guassianblur(arr,n):  #function to apply guassian filter
+    tot_sum=0
+    C=np.array([[0 for x in range(n)] for y in range(n)])
+    if(n==3):
+        A=np.array([[1,2,1],
+                   [2,4,2],
+                   [1,2,1]])
+    else:
+        A=np.array([[1,4,7,4,1],
+                   [4,16,26,16,4],
+                   [7,26,41,26,7],
+                   [4,16,26,16,4],
+                   [1,4,7,4,1]])   
+    for a in range(n):
+        for b in range(n):
+            C[a][b]+=A[a][b]*arr[a][b]
+            tot_sum+=C[a][b]
+    if(n==3):
+        return tot_sum//16
+    else:
+        return tot_sum//273
+
+def kernel(image,n): # function to select 3by3 or 5by5 window from an orginial image in which filter will be applied
+
+    n_rows = len(image) #no of rows of original image
+
+    n_col = len(image[0]) #no of columns of original image
+
+    square=[[0 for i in range(n)] for j in range(n)] #matrix which will carry 3by3 or 5by5 window of image to be blurred
+
+    row_square=[0 for i1 in range(n)] #this will contain 1 row 
+
+    if(n==3):
+
+        temp_image=[[0 for i2 in range(n_col+2)] for j2 in range(n_rows+2)] #tempoaray image which will contain values of original image but with expanded columns and rows containing zeros
+
+    elif(n==5):
+
+        temp_image=[[0 for i2 in range(n_col+4)] for j2 in range(n_rows+4)]
+
+    else:
+
+        print("Wrong number,try again")
+
+    blur_image=[[0 for i3 in range(n_col)] for j3 in range(n_rows)]
+
+    y=n_rows-1
+
+    z=n_col-1
+
+    for a in range(n_col): # expanding rows ,assining zeros '0' to first and last rows for 3by3 filter
+
+        temp_image[0][a]=0 
+
+        temp_image[y][a]=0
+
+        if(n==5):          #also assinging zerso to second and second last rows of for 5by5 filter
+
+            temp_image[1][a]=0
+
+            temp_image[y-1][a]=0
+
+    for b in range(n_rows):# expanding rows ,assining zeros to first and last columns for 3by3 filter
+
+        temp_image[b][0]=0
+
+        temp_image[b][z]=0
+
+        if(n==5):         #also assinging zeros to second and second last columns of for 5by5 filter
+
+            temp_image[b][1]=0
+
+            temp_image[b][z-1]=0
+
+    for e in range(n_rows): #these two loops are to copy the value of original image into temporary image
+
+        for f in range(n_col):
+
+            if(n==3):
+
+                temp_image[e+1][f+1]=image[e][f]
+
+            else:
+
+                temp_image[e+2][f+2]=image[e][f]
+
+    for r in range(0,n_rows): #r is pointing rows(row pointer)
+
+        for c in range(0,n_col):#c is pointing columns(column pointer)
+
+            b=0
+
+            for i in range(r, r + n): # these are loops to select the window from temporaryimage either 3by 3 or 5by5
+
+                a=0
+
+                for j in range(c, c + n):
+
+                    row_square[a]=temp_image[i][j] # one row will be filled
+
+                    a=a+1
+
+                for k in range(0,n):
+
+                    square[b][k]=row_square[k] # that row will be copied in square 
+
+                b=b+1
+
+                row_square=[0 for i1 in range(n)] #emptying the row to be filled again
+
+            blur_image[r][c]=guassianblur(square,n)  #now this square will go and process in guassianblur method and its result will be the resulting pixel of blurred umage
+
+            square=[[0 for i in range(n)] for j in range(n)] #emptying square to be filled again
+
+    return blur_image #returning blurred image
+
+filter=input("dou you want 3by3 filter to blur or 5by5 kindly enter: ")
+
+n=int(filter)
+
+image =grayscale
+
+blurredimg=kernel(image,n)
+
+x=np.array(blurredimg) #converting in array to see dimensions of blurred image
+
+print(x.shape)
+
+plt.imshow(blurredimg, cmap="gray") 
+
+plt.show()
